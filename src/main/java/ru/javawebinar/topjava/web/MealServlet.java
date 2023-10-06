@@ -1,0 +1,45 @@
+package ru.javawebinar.topjava.web;
+
+import org.slf4j.Logger;
+import ru.javawebinar.topjava.model.MealTo;
+import ru.javawebinar.topjava.util.MealsUtil;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
+/**
+ * Created by karpenko on 06.10.2023.
+ * Description:
+ */
+public class MealServlet extends HttpServlet {
+
+    private static final Logger log = getLogger(MealServlet.class);
+
+    private static final int CALORIES_PER_DAY = 2000;
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-dd HH:mm");
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        log.debug("get on /meals");
+
+        List<MealTo> meals = MealsUtil.filteredByStreams(
+                MealsUtil.generateMealsList(),
+                LocalTime.of(0, 0),
+                LocalTime.of(23, 59, 59),
+                CALORIES_PER_DAY
+        );
+        request.setAttribute("meals", meals);
+        request.setAttribute("formatter", formatter);
+        request.getRequestDispatcher("meals.jsp").forward(request, response);
+    }
+
+}
