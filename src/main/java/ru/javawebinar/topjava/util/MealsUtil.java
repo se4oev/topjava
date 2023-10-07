@@ -33,7 +33,7 @@ public class MealsUtil {
     }
 
     private static MealTo createTo(Meal meal, boolean excess) {
-        return new MealTo(meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
+        return new MealTo(SequenceGenerator.nextId(MealTo.class), meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
     }
 
     public static List<Meal> generateMealsList() {
