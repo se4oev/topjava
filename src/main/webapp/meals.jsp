@@ -22,12 +22,17 @@
     </head>
     <body>
         <h3><a href="index.html">Home</a></h3>
+        <hr>
+        <h3>Meals</h3>
+        <a href="meals?action=insert">Add Meal</a>
         <table>
             <thead>
                 <tr>
                     <th>Date And Time</th>
                     <th>Description</th>
                     <th>Calories</th>
+                    <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +43,8 @@
                         <td><c:out default="2000-01-01 12:00" value="${formatter.format(meal.dateTime)}"></c:out></td>
                         <td><c:out default="Завтрак" value="${meal.description}"></c:out></td>
                         <td><c:out default="500" value="${meal.calories}"></c:out></td>
+                        <td><a href="meals?action=update">Update</a></td>
+                        <td><a href="meals?action=delete">Delete</a></td>
                     </tr>
                 </c:forEach>
             </tbody>
