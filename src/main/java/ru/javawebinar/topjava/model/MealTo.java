@@ -2,9 +2,9 @@ package ru.javawebinar.topjava.model;
 
 import java.time.LocalDateTime;
 
-public class MealTo {
+public class MealTo implements IBaseEntity {
 
-    private final Integer id;
+    private Integer id;
 
     private final LocalDateTime dateTime;
 
@@ -14,6 +14,10 @@ public class MealTo {
 
     private final boolean excess;
 
+    public MealTo(LocalDateTime dateTime, String description, int calories, boolean excess) {
+        this(0, dateTime, description, calories, excess);
+    }
+
     public MealTo(Integer id, LocalDateTime dateTime, String description, int calories, boolean excess) {
         this.id = id;
         this.dateTime = dateTime;
@@ -22,8 +26,14 @@ public class MealTo {
         this.excess = excess;
     }
 
+    @Override
     public Integer getId() {
         return id;
+    }
+
+    @Override
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public LocalDateTime getDateTime() {

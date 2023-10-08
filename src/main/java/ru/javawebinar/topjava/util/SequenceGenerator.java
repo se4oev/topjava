@@ -11,7 +11,7 @@ public class SequenceGenerator {
         synchronized (clazz) {
             Integer currentId = sequenceMap.get(clazz);
             if (currentId == null)
-                currentId = 0;
+                currentId = 1;
             else
                 currentId++;
             sequenceMap.put(clazz, currentId);
