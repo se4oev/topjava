@@ -24,7 +24,7 @@
         <h3><a href="index.html">Home</a></h3>
         <hr>
         <h3>Meals</h3>
-        <a href="meals?action=insert">Add Meal</a>
+        <a href="meals?action=edit">Add Meal</a>
         <table>
             <thead>
                 <tr>
@@ -39,12 +39,12 @@
                 <jsp:useBean id="meals" scope="request" type="java.util.List<ru.javawebinar.topjava.model.MealTo>"/>
                 <jsp:useBean id="formatter" scope="request" type="java.time.format.DateTimeFormatter"/>
                 <c:forEach var="meal" items="${meals}">
-                    <c:out default="<tr>" value="<tr class='${meal.excess ? 'red' : 'green'}'>" escapeXml="false"></c:out>
-                        <td><c:out default="2000-01-01 12:00" value="${formatter.format(meal.dateTime)}"></c:out></td>
-                        <td><c:out default="Завтрак" value="${meal.description}"></c:out></td>
-                        <td><c:out default="500" value="${meal.calories}"></c:out></td>
-                        <td><a href="meals?action=update&mealId=<c:out value="${meal.id}"/>">Update</a></td>
-                        <td><a href="meals?action=delete&mealId=<c:out value="${meal.id}"/>">Delete</a></td>
+                    <tr class="${meal.excess ? 'red' : 'green'}">
+                        <td>${formatter.format(meal.dateTime)}</td>
+                        <td>${meal.description}</td>
+                        <td>${meal.calories}</td>
+                        <td><a href="meals?action=edit&mealId=${meal.id}">Update</a></td>
+                        <td><a href="meals?action=delete&mealId=${meal.id}">Delete</a></td>
                     </tr>
                 </c:forEach>
             </tbody>

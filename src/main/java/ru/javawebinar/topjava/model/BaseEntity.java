@@ -1,6 +1,6 @@
 package ru.javawebinar.topjava.model;
 
-public interface IBaseEntity {
+public interface BaseEntity {
 
     Integer getId();
 

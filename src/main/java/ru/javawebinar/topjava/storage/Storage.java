@@ -6,10 +6,9 @@ public interface Storage<Id, Value> {
 
     Value findById(Id id);
 
-    Id save(Value value);
+    Value save(Value value);
 
     void deleteById(Id id);
 
     List<Value> findAll();
-
 }

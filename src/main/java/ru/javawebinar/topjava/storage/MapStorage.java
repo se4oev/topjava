@@ -1,48 +1,50 @@
 package ru.javawebinar.topjava.storage;
 
 import org.slf4j.Logger;
-import ru.javawebinar.topjava.model.IBaseEntity;
+import ru.javawebinar.topjava.model.BaseEntity;
+import ru.javawebinar.topjava.util.Sequence;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class ConcurentHashMapStorage<Value extends IBaseEntity> implements Storage<Integer, Value> {
+public class MapStorage<Value extends BaseEntity> implements Storage<Integer, Value> {
 
-    private static final Logger log = getLogger(ConcurentHashMapStorage.class);
+    private static final Logger log = getLogger(MapStorage.class);
 
     private final Map<Integer, Value> storage = new ConcurrentHashMap<>();
-    private final Supplier<Integer> idSupplier;
+    private final Sequence<Integer> sequence;
 
-    public ConcurentHashMapStorage(Supplier<Integer> idSupplier) {
-        this.idSupplier = idSupplier;
+    public MapStorage(Sequence<Integer> sequence) {
+        this.sequence = sequence;
     }
 
     @Override
     public Value findById(Integer id) {
         log.info("find by id: {}", id);
-        Value value = storage.get(id);
-        if (value == null)
-            throw new RuntimeException("Entity not found with id: " + id);
-        return value;
+        return storage.get(id);
     }
 
     @Override
-    public Integer save(Value value) {
+    public Value save(Value value) {
         Integer id = value.getId();
-        if (id == null || id == 0) {
-            Integer nextId = idSupplier.get();
+        if (id == null) {
+            Integer nextId = sequence.nextId(value.getClass());
             log.info("create new entity, id: {}", nextId);
             value.setId(nextId);
             id = nextId;
+        } else {
+            Value oldValue = findById(value.getId());
+            if (oldValue == null) {
+                log.warn("entity not found for update, id: {}", value.getId());
+                return null;
+            }
         }
         log.info("save entity, id: {}", id);
-        storage.put(id, value);
-        return id;
+        return storage.put(id, value);
     }
 
     @Override

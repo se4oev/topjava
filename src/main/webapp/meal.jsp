@@ -26,7 +26,7 @@
                 </tr>
                 <tr>
                     <td>Calories: </td>
-                    <td><input type="text" name="calories" value="<c:out value="${meal.calories}"/>"/></td>
+                    <td><input type="number" name="calories" value="<c:out value="${meal.calories}"/>"/></td>
                 </tr>
             </table>
             <input type="submit" value="Save"/>

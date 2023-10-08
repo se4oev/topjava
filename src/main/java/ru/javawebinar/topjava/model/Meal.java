@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-public class Meal implements IBaseEntity {
+public class Meal implements BaseEntity {
 
     private Integer id;
 
@@ -15,7 +15,7 @@ public class Meal implements IBaseEntity {
     private final int calories;
 
     public Meal(LocalDateTime dateTime, String description, int calories) {
-        this(0, dateTime, description, calories);
+        this(null, dateTime, description, calories);
     }
 
     public Meal(Integer id, LocalDateTime dateTime, String description, int calories) {

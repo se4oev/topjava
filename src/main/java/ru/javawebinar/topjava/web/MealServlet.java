@@ -2,11 +2,12 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.storage.ConcurentHashMapStorage;
+import ru.javawebinar.topjava.storage.MapStorage;
 import ru.javawebinar.topjava.storage.Storage;
+import ru.javawebinar.topjava.util.MapSequence;
 import ru.javawebinar.topjava.util.MealsUtil;
-import ru.javawebinar.topjava.util.SequenceGenerator;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,11 +36,16 @@ public class MealServlet extends HttpServlet {
     private final Storage<Integer, Meal> mealStorage;
 
     public MealServlet() {
-        this(new ConcurentHashMapStorage<>(() -> SequenceGenerator.nextId(Meal.class)));
+        this(new MapStorage<>(new MapSequence()));
     }
 
-    public MealServlet(ConcurentHashMapStorage<Meal> mealStorage) {
+    public MealServlet(MapStorage<Meal> mealStorage) {
         this.mealStorage = mealStorage;
+    }
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
         fillStorage(MealsUtil.generateMealsList());
     }
 
@@ -52,18 +58,19 @@ public class MealServlet extends HttpServlet {
         String action = request.getParameter("action");
         log.debug("get on /meals, action {}", action);
 
-        if (action != null && (action.equals("insert") || action.equals("update"))) {
+        if ("edit".equals(action)) {
             String mealId = request.getParameter("mealId");
-            if (mealId != null && !mealId.equals("0"))
+            if (mealId != null) {
                 request.setAttribute("meal", mealStorage.findById(Integer.valueOf(mealId)));
+            }
             request.getRequestDispatcher("/meal.jsp").forward(request, response);
             return;
         }
 
-        if (action != null && action.equalsIgnoreCase("delete")) {
+        if ("delete".equals(action)) {
             String mealId = request.getParameter("mealId");
             mealStorage.deleteById(Integer.valueOf(mealId));
-            response.sendRedirect("/topjava/meals");
+            response.sendRedirect("meals");
             return;
         }
         request.setAttribute("meals", filterMeals(mealStorage.findAll()));
@@ -81,7 +88,7 @@ public class MealServlet extends HttpServlet {
         Integer id = (mealId == null || mealId.isEmpty()) ? null : Integer.parseInt(mealId);
         Meal meal = new Meal(
                 id,
-                LocalDateTime.parse(dateTime.replace("T", " "), formatter),
+                LocalDateTime.parse(dateTime),
                 description,
                 Integer.parseInt(calories)
         );
@@ -93,7 +100,7 @@ public class MealServlet extends HttpServlet {
         return MealsUtil.filteredByStreams(
                 meals,
                 LocalTime.of(0, 0),
-                LocalTime.of(23, 59, 59),
+                LocalTime.MAX,
                 CALORIES_PER_DAY
         );
     }
