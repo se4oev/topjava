@@ -2,13 +2,13 @@ package ru.javawebinar.topjava.storage;
 
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.BaseEntity;
-import ru.javawebinar.topjava.util.Sequence;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -17,10 +17,10 @@ public class InMemoryStorage<Value extends BaseEntity> implements Storage<Intege
     private static final Logger log = getLogger(InMemoryStorage.class);
 
     private final Map<Integer, Value> storage = new ConcurrentHashMap<>();
-    private final Sequence<Integer> sequence = new Sequence<Integer>() {
+    private final Supplier<Integer> sequence = new Supplier<Integer>() {
         private final AtomicInteger id = new AtomicInteger(0);
         @Override
-        public Integer nextId() {
+        public Integer get() {
             return id.getAndIncrement();
         }
     };
@@ -41,7 +41,7 @@ public class InMemoryStorage<Value extends BaseEntity> implements Storage<Intege
     }
 
     private Value doSave(Value value) {
-        Integer nextId = sequence.nextId();
+        Integer nextId = sequence.get();
         log.info("create new entity, id: {}", nextId);
         value.setId(nextId);
         storage.put(nextId, value);
