@@ -2,13 +2,13 @@ package ru.javawebinar.topjava.storage;
 
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.BaseEntity;
-import ru.javawebinar.topjava.util.InMemorySequence;
 import ru.javawebinar.topjava.util.Sequence;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -17,7 +17,13 @@ public class InMemoryStorage<Value extends BaseEntity> implements Storage<Intege
     private static final Logger log = getLogger(InMemoryStorage.class);
 
     private final Map<Integer, Value> storage = new ConcurrentHashMap<>();
-    private final Sequence<Integer> sequence = new InMemorySequence();
+    private final Sequence<Integer> sequence = new Sequence<Integer>() {
+        private final AtomicInteger id = new AtomicInteger(0);
+        @Override
+        public Integer nextId() {
+            return id.getAndIncrement();
+        }
+    };
 
     @Override
     public Value findById(Integer id) {
@@ -43,13 +49,13 @@ public class InMemoryStorage<Value extends BaseEntity> implements Storage<Intege
     }
 
     private synchronized Value doUpdate(Integer id, Value value) {
-        Value oldValue = findById(value.getId());
+        log.info("save entity, id: {}", id);
+        Value oldValue = storage.replace(id, value);
         if (oldValue == null) {
             log.warn("entity not found for update, id: {}", value.getId());
             return null;
         }
-        log.info("save entity, id: {}", id);
-        return storage.put(id, value);
+        return value;
     }
 
     @Override
