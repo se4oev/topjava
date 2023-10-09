@@ -2,9 +2,8 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.storage.MapStorage;
+import ru.javawebinar.topjava.storage.InMemoryStorage;
 import ru.javawebinar.topjava.storage.Storage;
-import ru.javawebinar.topjava.util.MapSequence;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import javax.servlet.ServletConfig;
@@ -33,19 +32,12 @@ public class MealServlet extends HttpServlet {
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-dd HH:mm");
 
-    private final Storage<Integer, Meal> mealStorage;
-
-    public MealServlet() {
-        this(new MapStorage<>(new MapSequence()));
-    }
-
-    public MealServlet(MapStorage<Meal> mealStorage) {
-        this.mealStorage = mealStorage;
-    }
+    private Storage<Integer, Meal> mealStorage;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+        this.mealStorage = new InMemoryStorage<>();
         fillStorage(MealsUtil.generateMealsList());
     }
 
@@ -104,5 +96,4 @@ public class MealServlet extends HttpServlet {
                 CALORIES_PER_DAY
         );
     }
-
 }

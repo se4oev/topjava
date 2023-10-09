@@ -56,5 +56,4 @@ public class MealsUtil {
                 new Meal(LocalDateTime.of(2023, Month.OCTOBER, 5, 18, 10), "Ужин", 800)
         );
     }
-
 }
