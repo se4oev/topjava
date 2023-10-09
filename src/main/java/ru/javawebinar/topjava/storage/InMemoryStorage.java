@@ -48,7 +48,7 @@ public class InMemoryStorage<Value extends BaseEntity> implements Storage<Intege
         return value;
     }
 
-    private synchronized Value doUpdate(Integer id, Value value) {
+    private Value doUpdate(Integer id, Value value) {
         log.info("save entity, id: {}", id);
         Value oldValue = storage.replace(id, value);
         if (oldValue == null) {
@@ -59,7 +59,7 @@ public class InMemoryStorage<Value extends BaseEntity> implements Storage<Intege
     }
 
     @Override
-    public synchronized void deleteById(Integer id) {
+    public void deleteById(Integer id) {
         storage.remove(id);
     }
 
