@@ -16,9 +16,9 @@ public class MealRestController {
     @Autowired
     private MealService service;
 
-    public Meal create(MealTo mealTo) {
+    public Meal create(Meal meal) {
         int userId = getAuthenticatedUserId();
-        return service.create(userId, MealsUtil.mealFromTo(mealTo, userId));
+        return service.create(userId, meal);
     }
 
     public Meal get(int mealId) {
@@ -30,9 +30,9 @@ public class MealRestController {
         return MealsUtil.getTos(service.getAll(), MealsUtil.DEFAULT_CALORIES_PER_DAY);
     }
 
-    public void update(MealTo mealTo) {
+    public void update(Meal meal) {
         int userId = getAuthenticatedUserId();
-        service.update(userId, MealsUtil.mealFromTo(mealTo, userId));
+        service.update(userId, meal);
     }
 
     public void delete(int mealId) {
