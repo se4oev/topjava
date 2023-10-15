@@ -13,7 +13,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -56,6 +58,10 @@ public class MealServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (request.getParameterMap().containsKey("dateFrom")) {
+            getFilteredList(request, response);
+            return;
+        }
         String action = request.getParameter("action");
 
         switch (action == null ? "all" : action) {
@@ -84,6 +90,25 @@ public class MealServlet extends HttpServlet {
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
+    }
+
+    private void getFilteredList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        log.info("getFilteredList");
+        LocalDate dateFrom = request.getParameter("dateFrom") == null
+                ? null
+                : LocalDate.parse(request.getParameter("dateFrom"));
+        LocalDate dateTo = request.getParameter("dateTo") == null
+                ? null
+                : LocalDate.parse(request.getParameter("dateTo"));
+        LocalTime timeFrom = request.getParameter("timeFrom") == null
+                ? null
+                : LocalTime.parse(request.getParameter("timeFrom"));
+        LocalTime timeTo = request.getParameter("timeTo") == null
+                ? null
+                : LocalTime.parse(request.getParameter("timeTo"));
+        request.setAttribute("meals", MealsUtil.getTos(
+                mealRestController.filter(dateFrom, dateTo, timeFrom, timeTo), MealsUtil.DEFAULT_CALORIES_PER_DAY));
+        request.getRequestDispatcher("/meals.jsp").forward(request, response);
     }
 
     private int getId(HttpServletRequest request) {
