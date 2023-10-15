@@ -26,8 +26,8 @@ public class MealRestController {
         return service.get(userId, mealId);
     }
 
-    public List<MealTo> getAll() {
-        return MealsUtil.getTos(service.getAll(), MealsUtil.DEFAULT_CALORIES_PER_DAY);
+    public List<Meal> getAll() {
+        return service.getAll();
     }
 
     public void update(Meal meal) {
