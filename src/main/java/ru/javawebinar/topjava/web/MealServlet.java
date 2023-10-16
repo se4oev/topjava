@@ -59,13 +59,12 @@ public class MealServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (request.getParameterMap().containsKey("dateFrom")) {
-            getFilteredList(request, response);
-            return;
-        }
         String action = request.getParameter("action");
 
         switch (action == null ? "all" : action) {
+            case "filter":
+                getFilteredList(request, response);
+                break;
             case "delete":
                 int id = getId(request);
                 log.info("Delete id={}", id);

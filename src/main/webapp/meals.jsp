@@ -22,6 +22,7 @@
     <hr/>
     <h2>Meals</h2>
     <form method="get" action="meals">
+        <input type="hidden" name="action" value="filter">
         <table>
             <tr>
                 <td>От даты (включая)</td>
