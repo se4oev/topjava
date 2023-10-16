@@ -7,8 +7,6 @@ import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Collection;
 import java.util.List;
 
 @Controller
@@ -31,6 +29,10 @@ public class MealRestController {
         return service.getAll();
     }
 
+    public List<Meal> filterByDate(LocalDate startDate, LocalDate endDate) {
+        return service.filterByDate(startDate, endDate);
+    }
+
     public void update(Meal meal) {
         int userId = getAuthenticatedUserId();
         service.update(userId, meal);
@@ -43,9 +45,5 @@ public class MealRestController {
 
     private int getAuthenticatedUserId() {
         return SecurityUtil.authUserId();
-    }
-
-    public Collection<Meal> filter(LocalDate dateFrom, LocalDate dateTo, LocalTime timeFrom, LocalTime timeTo) {
-        return service.filter(dateFrom, dateTo, timeFrom, timeTo);
     }
 }

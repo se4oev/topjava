@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.web.meal.MealRestController;
 
@@ -94,20 +95,18 @@ public class MealServlet extends HttpServlet {
 
     private void getFilteredList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         log.info("getFilteredList");
-        LocalDate dateFrom = request.getParameter("dateFrom") == null
-                ? null
-                : LocalDate.parse(request.getParameter("dateFrom"));
-        LocalDate dateTo = request.getParameter("dateTo") == null
-                ? null
-                : LocalDate.parse(request.getParameter("dateTo"));
-        LocalTime timeFrom = request.getParameter("timeFrom") == null
-                ? null
-                : LocalTime.parse(request.getParameter("timeFrom"));
-        LocalTime timeTo = request.getParameter("timeTo") == null
-                ? null
-                : LocalTime.parse(request.getParameter("timeTo"));
-        request.setAttribute("meals", MealsUtil.getTos(
-                mealRestController.filter(dateFrom, dateTo, timeFrom, timeTo), MealsUtil.DEFAULT_CALORIES_PER_DAY));
+
+        LocalDate dateFrom = DateTimeUtil.parseDate(request.getParameter("dateFrom"));
+        LocalDate dateTo = DateTimeUtil.parseDate(request.getParameter("dateTo"));
+        LocalTime timeFrom = DateTimeUtil.parseTime(request.getParameter("timeFrom"));
+        LocalTime timeTo = DateTimeUtil.parseTime(request.getParameter("timeTo"));
+
+        request.setAttribute("meals", MealsUtil.getFilteredTos(
+                mealRestController.filterByDate(dateFrom, dateTo),
+                MealsUtil.DEFAULT_CALORIES_PER_DAY,
+                timeFrom,
+                timeTo
+        ));
         request.getRequestDispatcher("/meals.jsp").forward(request, response);
     }
 
