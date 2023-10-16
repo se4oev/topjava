@@ -17,7 +17,7 @@ public class DateTimeUtil {
                 : !lt.isBefore(startTime);
     }
 
-    public static boolean isBetweenDates(LocalDate ld, LocalDate startDate, LocalDate endDate) {
+    public static boolean isBetweenInclusive(LocalDate ld, LocalDate startDate, LocalDate endDate) {
         if (startDate != null && endDate != null) {
             return !ld.isBefore(startDate) && !ld.isAfter(endDate);
         }
@@ -31,17 +31,15 @@ public class DateTimeUtil {
     }
 
     public static LocalDate parseDate(String date) {
-        if (date == null || date.isEmpty()) {
-            return null;
-        }
-        return LocalDate.parse(date);
+        return date == null || date.trim().isEmpty()
+                ? null
+                :  LocalDate.parse(date);
     }
 
     public static LocalTime parseTime(String time) {
-        if (time == null || time.isEmpty()) {
-            return null;
-        }
-        return LocalTime.parse(time);
+        return time == null || time.trim().isEmpty()
+                ? null
+                : LocalTime.parse(time);
     }
 }
 
