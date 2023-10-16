@@ -33,17 +33,18 @@ public class MealService {
         return checkNotFoundWithId(repository.get(userId, mealId), mealId);
     }
 
-    public List<MealTo> getAll(int userId) {
+    public List<MealTo> getAll(int userId, int caloriesPerDay) {
         List<Meal> meals = repository.getAll(userId);
-        return MealsUtil.getTos(meals, MealsUtil.DEFAULT_CALORIES_PER_DAY);
+        return MealsUtil.getTos(meals, caloriesPerDay);
     }
 
     public void update(int userId, Meal meal) {
         checkNotFoundWithId(repository.save(userId, meal), meal.getId());
     }
 
-    public List<MealTo> filterByDate(int userId, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
+    public List<MealTo> filterByDate(int userId, LocalDate startDate, LocalDate endDate,
+                                     LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         List<Meal> meals = repository.filterByDate(userId, startDate, endDate);
-        return MealsUtil.getFilteredTos(meals, MealsUtil.DEFAULT_CALORIES_PER_DAY, startTime, endTime);
+        return MealsUtil.getFilteredTos(meals, caloriesPerDay, startTime, endTime);
     }
 }

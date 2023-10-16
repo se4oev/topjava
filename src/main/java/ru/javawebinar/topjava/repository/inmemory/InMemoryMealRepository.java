@@ -25,19 +25,16 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal save(int userId, Meal meal) {
+        meal.setUserId(userId);
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
-            meal.setUserId(userId);
             repository.put(meal.getId(), meal);
             return meal;
         }
         // handle case: update, but not present in storage
-        Meal mealById = repository.get(meal.getId());
-        if (mealById == null || mealById.getUserId() != userId) {
-            return null;
-        }
-        meal.setUserId(userId);
-        return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
+        return get(userId, meal.getId()) == null
+                ? null
+                : repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
     }
 
     @Override
@@ -62,8 +59,8 @@ public class InMemoryMealRepository implements MealRepository {
     @Override
     public List<Meal> filterByDate(int userId, LocalDate dateFrom, LocalDate dateTo) {
         return repository.values().stream()
-                .filter(meal ->
-                        DateTimeUtil.isBetweenInclusive(meal.getDate(), dateFrom, dateTo) && meal.getUserId() == userId)
+                .filter(meal -> DateTimeUtil.isBetweenInclusive(meal.getDate(), dateFrom, dateTo))
+                .filter(meal -> meal.getUserId() == userId)
                 .sorted(Comparator.comparing(Meal::getDate).reversed())
                 .collect(Collectors.toList());
     }

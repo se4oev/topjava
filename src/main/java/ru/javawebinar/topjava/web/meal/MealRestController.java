@@ -19,7 +19,7 @@ import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 @Controller
 public class MealRestController {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private MealService service;
@@ -37,12 +37,13 @@ public class MealRestController {
 
     public List<MealTo> getAll() {
         log.info("getAll");
-        return service.getAll(getAuthenticatedUserId());
+        return service.getAll(getAuthenticatedUserId(), getAuthenticatedUserCalories());
     }
 
     public List<MealTo> filterByDateTime(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
         log.info("filterByDateTime");
-        return service.filterByDate(getAuthenticatedUserId(), startDate, endDate, startTime, endTime);
+        return service.filterByDate(
+                getAuthenticatedUserId(), startDate, endDate, startTime, endTime, getAuthenticatedUserCalories());
     }
 
     public void update(Meal meal, int id) {
@@ -58,5 +59,9 @@ public class MealRestController {
 
     private int getAuthenticatedUserId() {
         return SecurityUtil.authUserId();
+    }
+
+    private int getAuthenticatedUserCalories() {
+        return SecurityUtil.authUserCaloriesPerDay();
     }
 }
