@@ -26,27 +26,18 @@ public class InMemoryMealByUserRepository implements MealRepository {
 
     @Override
     public Meal save(int userId, Meal meal) {
-        meal.setUserId(userId);
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
-            repository.compute(userId, (integer, meals) -> {
-                if (meals == null) {
-                    meals = new ConcurrentHashMap<>();
-                }
-                meals.put(meal.getId(), meal);
-                return meals;
-            });
+            Map<Integer, Meal> userMeals = repository.computeIfAbsent(userId, id -> new ConcurrentHashMap<>());
+            userMeals.put(meal.getId(), meal);
             return meal;
         }
-        // handle case: update, but not present in storage
-        if (get(userId, meal.getId()) == null) {
-            return null;
-        }
-        repository.computeIfPresent(userId, (id, meals) -> {
-            meals.put(meal.getId(), meal);
-            return meals;
-        });
-        return meal;
+
+        Map<Integer, Meal> userMeals = repository.computeIfPresent(userId, (id, meals) -> meals);
+
+        return userMeals != null && (userMeals.computeIfPresent(meal.getId(), (integer, oldMeal) -> meal) != null)
+                ? meal
+                : null;
     }
 
     @Override
@@ -71,7 +62,6 @@ public class InMemoryMealByUserRepository implements MealRepository {
     public List<Meal> filterByDate(int userId, LocalDate dateFrom, LocalDate dateTo) {
         return repository.computeIfAbsent(userId, id -> new ConcurrentHashMap<>()).values().stream()
                 .filter(meal -> DateTimeUtil.isBetweenInclusive(meal.getDate(), dateFrom, dateTo))
-                .filter(meal -> meal.getUserId() == userId)
                 .sorted(Comparator.comparing(Meal::getDate).reversed())
                 .collect(Collectors.toList());
     }
