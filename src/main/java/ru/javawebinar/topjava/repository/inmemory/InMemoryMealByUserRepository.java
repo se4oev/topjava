@@ -33,10 +33,10 @@ public class InMemoryMealByUserRepository implements MealRepository {
             return meal;
         }
 
-        Map<Integer, Meal> userMeals = repository.computeIfPresent(userId, (id, meals) -> meals);
+        Map<Integer, Meal> userMeals = repository.get(userId);
 
-        return userMeals != null && (userMeals.computeIfPresent(meal.getId(), (integer, oldMeal) -> meal) != null)
-                ? meal
+        return (userMeals != null)
+                ? userMeals.computeIfPresent(meal.getId(), (integer, oldMeal) -> meal)
                 : null;
     }
 
