@@ -36,3 +36,5 @@ CREATE TABLE meals
 );
 
 CREATE UNIQUE INDEX meals_unique_date_time_idx ON meals (user_id, date_time);
+CREATE INDEX meals_date_time_idx ON meals USING btree (date_time);
+CREATE INDEX meals_user_id ON meals USING btree (user_id);
