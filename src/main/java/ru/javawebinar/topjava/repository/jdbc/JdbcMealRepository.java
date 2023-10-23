@@ -88,7 +88,8 @@ public class JdbcMealRepository implements MealRepository {
                 "               FROM meals m " +
                 "              WHERE m.user_id = ? " +
                 "                AND m.date_time >= ? " +
-                "                AND m.date_time < ? ";
+                "                AND m.date_time < ? " +
+                "              ORDER BY date_time DESC ";
         return jdbcTemplate.query(filterQuery, ROW_MAPPER, userId, startDateTime, endDateTime);
     }
 }

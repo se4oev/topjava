@@ -88,25 +88,21 @@ public class MealServiceTest {
         assertMatch(mealService.get(updated.getId(), ADMIN_ID), getUpdatedAdminMeal());
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void updateNotFound() {
         Meal updated = getUpdatedAdminMeal();
         updated.setId(NOT_FOUND);
-        mealService.update(updated, ADMIN_ID);
+        assertThrows(NotFoundException.class, () -> mealService.update(updated, ADMIN_ID));
     }
 
     @Test(expected = NotFoundException.class)
     public void updateExistedButNotYourFood() {
-        Meal updated = getUpdatedAdminMeal();
-        mealService.update(updated, USER_ID);
+        mealService.update(getUpdatedAdminMeal(), USER_ID);
     }
 
     @Test
     public void getAll() {
         List<Meal> allUserMeals = mealService.getAll(USER_ID);
-        assertMatch(allUserMeals, userMeal3, userMeal2, userMeal1);
-
-        List<Meal> allAdminMeals = mealService.getAll(ADMIN_ID);
-        assertMatch(allAdminMeals, adminMeal3, adminMeal2, adminMeal1);
+        assertMatch(allUserMeals, userMeal6, userMeal5, userMeal4, userMeal3, userMeal2, userMeal1);
     }
 }

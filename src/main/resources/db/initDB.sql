@@ -11,7 +11,7 @@ CREATE TABLE users
     name             VARCHAR                           NOT NULL,
     email            VARCHAR                           NOT NULL,
     password         VARCHAR                           NOT NULL,
-    registered       TIMESTAMP           DEFAULT now() NOT NULL,
+    registered       TIMESTAMP                         NOT NULL,
     enabled          BOOL                DEFAULT TRUE  NOT NULL,
     calories_per_day INTEGER             DEFAULT 2000  NOT NULL
 );
@@ -32,9 +32,7 @@ CREATE TABLE meals
     date_time   TIMESTAMP           DEFAULT now() NOT NULL,
     description VARCHAR                           NOT NULL,
     calories    INTEGER                           NOT NULL,
-    CONSTRAINT fk_m_to_u FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT fk_meals_to_users FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX meals_unique_date_time_idx ON meals (user_id, date_time);
-CREATE INDEX meals_date_time_idx ON meals USING btree (date_time);
-CREATE INDEX meals_user_id ON meals USING btree (user_id);
