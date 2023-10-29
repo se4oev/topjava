@@ -1,19 +1,64 @@
 package ru.javawebinar.topjava.model;
 
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@NamedQueries({
+        @NamedQuery(name = Meal.DELETE, query = "DELETE FROM Meal m " +
+                "                                 WHERE m.id = :id " +
+                "                                   AND m.user.id = :userId"),
+        @NamedQuery(name = Meal.GET_BY_ID, query = "SELECT m " +
+                "                                     FROM Meal m " +
+                "                                    WHERE m.id = :id " +
+                "                                      AND m.user.id = :userId"),
+        @NamedQuery(name = Meal.GET_ALL_BY_USER, query = "SELECT m " +
+                "                                           FROM Meal m " +
+                "                                          WHERE m.user.id = :userId " +
+                "                                          ORDER BY m.dateTime DESC"),
+        @NamedQuery(name = Meal.FILTERED_BY_DATE, query = "SELECT m " +
+                "                                            FROM Meal m " +
+                "                                           WHERE m.user.id = :userId  " +
+                "                                             AND m.dateTime >= :startDate " +
+                "                                             AND m.dateTime < :endDate " +
+                "                                           ORDER BY m.dateTime DESC"),
+        @NamedQuery(name = Meal.UPDATE_BY_USER, query = "UPDATE Meal m " +
+                "                                           SET m.dateTime = :dateTime " +
+                "                                              ,m.description = :description " +
+                "                                              ,m.calories = :calories " +
+                "                                         WHERE m.id = :id " +
+                "                                           AND m.user.id = :userId ")
+})
+@Entity
+@Table(name = "meal", indexes = {
+        @Index(name ="meal_unique_user_datetime_idx", columnList = "user_id, date_time", unique = true)
+})
 public class Meal extends AbstractBaseEntity {
+
+    public static final String DELETE = "Meal.delete";
+    public static final String GET_BY_ID = "Meal.get";
+    public static final String GET_ALL_BY_USER = "Meal.getByUser";
+    public static final String FILTERED_BY_DATE = "Meal.filteredByDate";
+    public static final String UPDATE_BY_USER = "Meal.update";
+
+    @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;
 
+    @Column(name = "description", nullable = false)
+    @NotBlank
+    @Size(max = 256)
     private String description;
 
+    @Column(name = "calories", nullable = false)
+    @Positive
     private int calories;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
     public Meal() {
