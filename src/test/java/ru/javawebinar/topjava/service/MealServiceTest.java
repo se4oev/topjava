@@ -42,7 +42,12 @@ public class MealServiceTest {
     public static ExternalResource summary = new ExternalResource() {
         @Override
         protected void after() {
-            log.info("Summary information about execution time" + System.lineSeparator() + executionResults);
+            String delimiter = "#################################################";
+            log.info(System.lineSeparator() +
+                    delimiter + delimiter + System.lineSeparator() +
+                    "Summary information about execution time" + System.lineSeparator() +
+                    executionResults +
+                    delimiter + delimiter);
         }
     };
 
@@ -50,7 +55,7 @@ public class MealServiceTest {
     public Stopwatch stopwatch = new Stopwatch() {
         @Override
         protected void finished(long nanos, Description description) {
-            String result = String.format("%s %d ms",
+            String result = String.format("%-90s %-4d ms",
                     description.getDisplayName(),
                     TimeUnit.NANOSECONDS.toMillis(nanos));
             executionResults.append(result).append(System.lineSeparator());
