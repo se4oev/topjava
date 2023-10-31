@@ -32,8 +32,7 @@ public class JpaMealRepository implements MealRepository {
             if (oldMeal == null) {
                 return null;
             }
-            em.merge(meal);
-            return meal;
+            return em.merge(meal);
         }
     }
 
