@@ -7,10 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Transactional(readOnly = true)
 public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
 
     @Transactional
@@ -20,9 +22,9 @@ public interface CrudMealRepository extends JpaRepository<Meal, Integer> {
             "  AND m.user.id = :userId ")
     int delete(@Param("id") int id, @Param("userId") int userId);
 
-    Meal findOneByIdAndUserId(int id, int userId);
+    Meal findOneByIdAndUser(int id, User user);
 
-    List<Meal> findAllByUserId(int userId, Sort sort);
+    List<Meal> findAllByUser(User user, Sort sort);
 
     @Query("SELECT m " +
             " FROM Meal m " +
