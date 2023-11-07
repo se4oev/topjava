@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-@Transactional(readOnly = true)
 public class DataJpaMealRepository implements MealRepository {
 
     private static final Sort SORT_DATETIME = Sort.by(Sort.Direction.DESC, "dateTime");
@@ -42,12 +41,12 @@ public class DataJpaMealRepository implements MealRepository {
 
     @Override
     public Meal get(int id, int userId) {
-        return mealRepository.findOneByIdAndUser(id, userRepository.getReferenceById(userId));
+        return mealRepository.findOneByIdAndUserId(id, userId);
     }
 
     @Override
     public List<Meal> getAll(int userId) {
-        return mealRepository.findAllByUser(userRepository.getReferenceById(userId), SORT_DATETIME);
+        return mealRepository.findAllByUserId(userId, SORT_DATETIME);
     }
 
     @Override
