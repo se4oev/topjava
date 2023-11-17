@@ -59,18 +59,19 @@ public class JdbcUserRepository implements UserRepository {
             if (namedParameterJdbcTemplate.update(updateQuery, parameterSource) == 0) {
                 return null;
             }
+            jdbcTemplate.update("DELETE FROM user_role WHERE user_id = ?", user.getId());
             updateRoles(user.getId(), user.getRoles());
         }
         return user;
     }
 
-    private void updateRoles(int userId, Set<Role> roles) {
+    private void updateRoles(int id, Set<Role> roles) {
         String batchQuery = """
                     INSERT INTO user_role (user_id, role)
                     VALUES (?, ?)
                     """;
         jdbcTemplate.batchUpdate(batchQuery, roles, 200, (ps, role) -> {
-            ps.setInt(1, userId);
+            ps.setInt(1, id);
             ps.setString(2, role.name());
         });
     }
