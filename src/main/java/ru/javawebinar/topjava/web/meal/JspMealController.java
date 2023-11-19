@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.Util;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -34,29 +35,30 @@ public class JspMealController extends MealController {
     public String meals(HttpServletRequest request, Model model) {
         log.info("meals");
 
-        String action = request.getParameter("action");
-        switch (action == null ? "all" : action) {
-            case "create", "update" -> {
-                final Meal meal = "create".equals(action) ?
-                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000) :
-                        get(getId(request));
-                model.addAttribute("meal", meal);
-                return "mealForm";
-            }
-            case "filter" -> {
-                LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
-                LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
-                LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
-                LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
-                List<MealTo> mealToList = getBetween(startDate, startTime, endDate, endTime);
-                model.addAttribute("meals", mealToList);
-                return "meals";
-            }
-            default -> {
-                model.addAttribute("meals", getAll());
-                return "meals";
-            }
+        LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
+        LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
+        LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
+        LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
+        if (Util.atLeastOneIsNotNull(startDate, endDate, startTime, endDate)) {
+            List<MealTo> mealToList = getBetween(startDate, startTime, endDate, endTime);
+            model.addAttribute("meals", mealToList);
+        } else {
+            model.addAttribute("meals", getAll());
         }
+        return "meals";
+    }
+
+    @GetMapping("/create")
+    public String create(Model model) {
+        Meal meal = new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000);
+        model.addAttribute("meal", meal);
+        return "mealForm";
+    }
+
+    @GetMapping("/update")
+    public String update(HttpServletRequest request, Model model) {
+        model.addAttribute("meal", get(getId(request)));
+        return "mealForm";
     }
 
     @GetMapping("/delete")
