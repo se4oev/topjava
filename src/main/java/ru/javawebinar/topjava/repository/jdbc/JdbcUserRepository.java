@@ -2,30 +2,57 @@ package ru.javawebinar.topjava.repository.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.javawebinar.topjava.mapper.UserExtractor;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 import ru.javawebinar.topjava.util.ValidationUtil;
 
-import java.util.List;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.*;
 
 @Repository
 @Transactional(readOnly = true)
 public class JdbcUserRepository implements UserRepository {
+
+    private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
     private final JdbcTemplate jdbcTemplate;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private final SimpleJdbcInsert insertUser;
+
+    private final ResultSetExtractor<List<User>> userExtractor = rs -> {
+        Map<Integer, User> mapOfUsers = new LinkedHashMap<>();
+        while (rs.next()) {
+            int userId = rs.getInt("id");
+            mapOfUsers.compute(userId, (key, value) -> {
+                try {
+                    Set<Role> roles = rs.getString("role") == null
+                            ? Set.of()
+                            : Set.of(Role.valueOf(rs.getString("role")));
+                    if (value == null) {
+                        User user = ROW_MAPPER.mapRow(rs, rs.getRow());
+                        user.setRoles(roles);
+                        return user;
+                    }
+                    value.getRoles().addAll(roles);
+                    return value;
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+        }
+        return new ArrayList<>(mapOfUsers.values());
+    };
 
     @Autowired
     public JdbcUserRepository(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
@@ -50,12 +77,12 @@ public class JdbcUserRepository implements UserRepository {
         } else {
             String updateQuery = """
                     UPDATE users
-                      SET name=:name
-                         ,email=:email
-                         ,password=:password
-                         ,registered=:registered
-                         ,enabled=:enabled
-                         ,calories_per_day=:caloriesPerDay
+                      SET name=:name,
+                          email=:email,
+                          password=:password,
+                          registered=:registered,
+                          enabled=:enabled,
+                          calories_per_day=:caloriesPerDay
                     WHERE id=:id
                     """;
             if (namedParameterJdbcTemplate.update(updateQuery, parameterSource) == 0) {
@@ -92,7 +119,7 @@ public class JdbcUserRepository implements UserRepository {
                   LEFT JOIN user_role ur ON ur.user_id = u.id
                  WHERE u.id=?
                 """;
-        List<User> users = jdbcTemplate.query(query, new UserExtractor(), id);
+        List<User> users = jdbcTemplate.query(query, userExtractor, id);
         return DataAccessUtils.singleResult(users);
     }
 
@@ -104,7 +131,7 @@ public class JdbcUserRepository implements UserRepository {
                   LEFT JOIN user_role ur ON ur.user_id = u.id
                  WHERE u.email=?
                  """;
-        List<User> users = jdbcTemplate.query(query, new UserExtractor(), email);
+        List<User> users = jdbcTemplate.query(query, userExtractor, email);
         return DataAccessUtils.singleResult(users);
     }
 
@@ -116,6 +143,6 @@ public class JdbcUserRepository implements UserRepository {
                   LEFT JOIN user_role ur ON ur.user_id = u.id
                  ORDER BY u.name, u.email
                  """;
-        return jdbcTemplate.query(query, new UserExtractor());
+        return jdbcTemplate.query(query, userExtractor);
     }
 }

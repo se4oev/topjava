@@ -11,7 +11,6 @@
 <section>
     <h3><spring:message code="meal.title"/></h3>
     <form method="get" action="meals">
-        <input type="hidden" name="action" value="filter">
         <dl>
             <dt><spring:message code="meal.from_date"/></dt>
             <dd><input type="date" name="startDate" value="${param.startDate}"></dd>
@@ -55,7 +54,7 @@
                 <td>${meal.description}</td>
                 <td>${meal.calories}</td>
                 <td><a href="meals?action=update&id=${meal.id}"><spring:message code="meal.update"/></a></td>
-                <td><a href="meals?action=delete&id=${meal.id}"><spring:message code="meal.delete"/></a></td>
+                <td><a href="meals/delete?id=${meal.id}"><spring:message code="meal.delete"/></a></td>
             </tr>
         </c:forEach>
     </table>
