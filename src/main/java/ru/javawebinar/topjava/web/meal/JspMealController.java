@@ -28,12 +28,12 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
 public class JspMealController extends MealController {
 
     public JspMealController(MealService service, MealService mealService) {
-        super(service);
+        super(service, JspMealController.class);
     }
 
     @GetMapping
     public String meals(HttpServletRequest request, Model model) {
-        log.info("meals");
+        log.info("get meals");
 
         LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
@@ -50,6 +50,7 @@ public class JspMealController extends MealController {
 
     @GetMapping("/create")
     public String create(Model model) {
+        log.info("get for create");
         Meal meal = new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000);
         model.addAttribute("meal", meal);
         return "mealForm";
@@ -57,18 +58,21 @@ public class JspMealController extends MealController {
 
     @GetMapping("/update")
     public String update(HttpServletRequest request, Model model) {
+        log.info("get for update");
         model.addAttribute("meal", get(getId(request)));
         return "mealForm";
     }
 
     @GetMapping("/delete")
     public String delete(HttpServletRequest request) {
+        log.info("delete");
         delete(getId(request));
         return "redirect:/meals";
     }
 
     @PostMapping
     public String saveMeal(HttpServletRequest request) throws UnsupportedEncodingException {
+        log.info("save meal");
         Meal meal = new Meal(
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
@@ -79,7 +83,7 @@ public class JspMealController extends MealController {
         } else {
             create(meal);
         }
-        return "redirect:meals";
+        return "redirect:/meals";
     }
 
     private int getId(HttpServletRequest request) {

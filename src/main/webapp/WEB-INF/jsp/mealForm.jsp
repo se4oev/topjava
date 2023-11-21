@@ -7,18 +7,9 @@
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
-
-
-    <h2>
-        <c:if test="${param.action == 'create'}">
-            <spring:message code="meal.create"/>
-        </c:if>
-        <c:if test="${param.action == 'update'}">
-            <spring:message code="meal.edit"/>
-        </c:if>
-    </h2>
     <jsp:useBean id="meal" type="ru.javawebinar.topjava.model.Meal" scope="request"/>
-    <form method="post" action="/topjava/meals">
+    <h2><spring:message code='${empty meal.id ? "meal.create" : "meal.edit"}'/></h2>
+    <form method="post" action="meals">
         <input type="hidden" name="id" value="${meal.id}">
         <dl>
             <dt><spring:message code="meal.datetime"/></dt>
