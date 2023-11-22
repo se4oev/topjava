@@ -22,9 +22,9 @@ public abstract class MealController {
 
     private final MealService service;
 
-    public MealController(MealService service, Class<? extends MealController> child) {
+    public MealController(MealService service) {
         this.service = service;
-        this.log = LoggerFactory.getLogger(child);
+        this.log = LoggerFactory.getLogger(getClass());
     }
 
     public Meal get(int id) {

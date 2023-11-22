@@ -7,6 +7,6 @@ import ru.javawebinar.topjava.service.MealService;
 public class MealRestController extends MealController {
 
     public MealRestController(MealService service) {
-        super(service, MealRestController.class);
+        super(service);
     }
 }
