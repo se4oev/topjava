@@ -249,3 +249,17 @@
 -  <a href="http://www.bookvoed.ru/book?id=639284">Редмонд Э.: Семь баз данных за семь недель. Введение в современные базы данных и идеологию NoSQL</a>
 -  <a href="http://www.ozon.ru/context/detail/id/3174887/">Brian Goetz: Java Concurrency in Practice</a>
 -  <a href="http://bookvoed.ru/book?id=2593572">G.L. McDowell: Cracking the Coding Interview</a>
+
+#### API для работы с едой (Meal)
+- Получение списка еды для авторизованного пользователя:  
+  `curl http://localhost:8080/topjava/rest/meals/`
+- Получение списка еды для авторизованного пользователя, отфильтрованного по дате и времени  
+  `curl "http://localhost:8080/topjava/rest/meals/filter?startDate=2020-01-30&startTime=13:00&endDate=2020-01-31&endTime=20:00"`
+- Получение еды по id  
+  `curl http://localhost:8080/topjava/rest/meals/100003`
+- Создание еды  
+  `curl -X POST -H "Content-Type: application/json" -d "{\"id\": \"\", \"dateTime\": \"2023-02-22T18:15:00\", \"description\": \"Объедение\", \"calories\": \"710\"}" http://localhost:8080/topjava/rest/meals/`
+- Изменение ранее сохраненной еды  
+  `curl -X PUT -H "Content-Type: application/json" -d "{\"id\": \"100003\", \"dateTime\": \"2023-02-22T18:15:00\", \"description\": \"Хрючево\", \"calories\": \"1510\"}" http://localhost:8080/topjava/rest/meals/100003`
+- Удаление еды  
+  `curl -X DELETE http://localhost:8080/topjava/rest/meals/100003`
