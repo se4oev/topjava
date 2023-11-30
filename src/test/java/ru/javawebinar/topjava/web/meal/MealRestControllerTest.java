@@ -14,8 +14,6 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,8 +27,6 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Autowired
     MealService mealService;
-
-    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Test
     void doGet() throws Exception {
@@ -87,8 +83,10 @@ class MealRestControllerTest extends AbstractControllerTest {
     void getBetween() throws Exception {
         List<MealTo> expected = List.of(MealTestData.mealTo6, MealTestData.mealTo2);
         perform(MockMvcRequestBuilders.get(REST_URL + "filter")
-                .param("startDateTime", formatter.format(LocalDateTime.of(2020, 1, 29, 12, 0)))
-                .param("endDateTime", formatter.format(LocalDateTime.of(2020, 11, 1, 13, 4, 1))))
+                .param("startDate", "2020-01-29")
+                .param("startTime", "12:00")
+                .param("endDate", "2020-11-01")
+                .param("endTime", "13:04"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(MealTestData.MEAL_TO_MATCHER.contentJson(expected));
