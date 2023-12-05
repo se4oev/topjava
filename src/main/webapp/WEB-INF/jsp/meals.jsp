@@ -29,7 +29,8 @@
                 <dt><spring:message code="meal.endTime"/>:</dt>
                 <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
             </dl>
-            <button type="button" onclick="filterMeals()"><spring:message code="meal.filter"/></button>
+            <button type="button" onclick="clearFilter()"><spring:message code="common.clear"/></button>
+            <button type="button" onclick="ctx.updateTable()"><spring:message code="meal.filter"/></button>
         </form>
         <button class="btn btn-primary" onclick="add()">
             <span class="fa fa-plus"></span>
@@ -62,7 +63,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title"><spring:message code="${meal.isNew() ? 'meal.add' : 'meal.edit'}"/></h4>
+                <h4 class="modal-title"><spring:message code="meal.add"/></h4>
                 <button type="button" class="close" data-dismiss="modal" onclick="closeNoty()">&times;</button>
             </div>
             <div class="modal-body">
