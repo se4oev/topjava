@@ -24,6 +24,12 @@ public class MealUIController extends AbstractMealController {
     }
 
     @Override
+    @GetMapping("/id")
+    public Meal get(@PathVariable int id) {
+        return super.get(id);
+    }
+
+    @Override
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int id) {
@@ -32,8 +38,12 @@ public class MealUIController extends AbstractMealController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void create(MealTo mealTo) {
-        super.create(mealTo);
+    public void createOrUpdate(MealTo mealTo) {
+        if (mealTo.isNew()) {
+            super.create(mealTo);
+        } else {
+            super.update(mealTo, mealTo.id());
+        }
     }
 
     @Override
