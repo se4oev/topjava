@@ -1,35 +1,21 @@
 package ru.javawebinar.topjava.to;
 
-import org.hibernate.validator.constraints.Range;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.beans.ConstructorProperties;
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class MealTo extends BaseTo implements Serializable {
+public class MealTo extends BaseTo {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
+    private final LocalDateTime dateTime;
 
-    @NotNull
-    private LocalDateTime dateTime;
+    private final String description;
 
-    @NotBlank
-    @Size(min = 2, max = 120)
-    private String description;
+    private final int calories;
 
-    @Range(min = 10, max = 5000)
-    private int calories;
-
-    private Boolean excess;
+    private final boolean excess;
 
     @ConstructorProperties({"id", "dateTime", "description", "calories", "excess"})
-    public MealTo(Integer id, LocalDateTime dateTime, String description, int calories, Boolean excess) {
+    public MealTo(Integer id, LocalDateTime dateTime, String description, int calories, boolean excess) {
         super(id);
         this.dateTime = dateTime;
         this.description = description;
@@ -41,32 +27,16 @@ public class MealTo extends BaseTo implements Serializable {
         return dateTime;
     }
 
-    public void setDateTime(LocalDateTime dateTime) {
-        this.dateTime = dateTime;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public int getCalories() {
         return calories;
     }
 
-    public void setCalories(int calories) {
-        this.calories = calories;
-    }
-
-    public Boolean isExcess() {
+    public boolean isExcess() {
         return excess;
-    }
-
-    public void setExcess(Boolean excess) {
-        this.excess = excess;
     }
 
     @Override
