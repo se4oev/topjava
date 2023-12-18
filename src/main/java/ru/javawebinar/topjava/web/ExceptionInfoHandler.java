@@ -13,12 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.javawebinar.topjava.util.ValidationUtil;
-import ru.javawebinar.topjava.util.exception.ErrorInfo;
-import ru.javawebinar.topjava.util.exception.ErrorType;
-import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
-import ru.javawebinar.topjava.util.exception.NotFoundException;
+import ru.javawebinar.topjava.util.exception.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
@@ -46,20 +44,39 @@ public class ExceptionInfoHandler {
         return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
     }
 
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler(IllegalFieldsException.class)
+    public ErrorInfo validationError(HttpServletRequest req, IllegalFieldsException e) {
+        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
+    }
+
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ErrorInfo internalError(HttpServletRequest req, Exception e) {
         return logAndGetErrorInfo(req, e, true, APP_ERROR);
     }
 
-    //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
-    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
-        Throwable rootCause = ValidationUtil.getRootCause(e);
+    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, IllegalFieldsException e, boolean logException, ErrorType errorType) {
+        log(req, e, logException, errorType);
+        return getErrorInfo(req.getRequestURL(), errorType, e.getFieldsErrors());
+    }
+
+    private static void log(HttpServletRequest req, Throwable rootCause, boolean logException, ErrorType errorType) {
         if (logException) {
             log.error(errorType + " at request " + req.getRequestURL(), rootCause);
         } else {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
-        return new ErrorInfo(req.getRequestURL(), errorType, rootCause.toString());
+    }
+
+    //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
+    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
+        Throwable rootCause = ValidationUtil.getRootCause(e);
+        log(req, rootCause, logException, errorType);
+        return getErrorInfo(req.getRequestURL(), errorType, List.of(rootCause.toString()));
+    }
+
+    private static ErrorInfo getErrorInfo(CharSequence requestURL, ErrorType errorType, List<String> messages) {
+        return new ErrorInfo(requestURL, errorType, errorType.message(), messages);
     }
 }
