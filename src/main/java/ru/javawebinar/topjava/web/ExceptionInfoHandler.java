@@ -2,6 +2,8 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,6 +20,7 @@ import ru.javawebinar.topjava.util.exception.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
@@ -26,17 +29,19 @@ import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 public class ExceptionInfoHandler {
     private static final Logger log = LoggerFactory.getLogger(ExceptionInfoHandler.class);
 
+    @Autowired
+    private MessageSourceAccessor messageSourceAccessor;
+
+    private static final String EXCEPTION_DUPLICATE_EMAIL = "user.duplicateEmail";
+
+    private static final Map<String, String> CONSTRAINS_I18N_MAP = Map.of(
+            "users_unique_email_idx", EXCEPTION_DUPLICATE_EMAIL);
+
     //  http://stackoverflow.com/a/22358422/548473
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(NotFoundException.class)
     public ErrorInfo notFoundError(HttpServletRequest req, NotFoundException e) {
         return logAndGetErrorInfo(req, e, false, DATA_NOT_FOUND);
-    }
-
-    @ResponseStatus(HttpStatus.CONFLICT)  // 409
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
-        return logAndGetErrorInfo(req, e, true, DATA_ERROR);
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
@@ -66,6 +71,27 @@ public class ExceptionInfoHandler {
                 VALIDATION_ERROR.message(),
                 ValidationUtil.getFieldErrors(error.getBindingResult())
         );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ErrorInfo handleDataIntegrityViolationException(HttpServletRequest req, DataIntegrityViolationException e) {
+        String rootMsg = ValidationUtil.getRootCause(e).getMessage();
+        if (rootMsg != null) {
+            String lowerCaseMsg = rootMsg.toLowerCase();
+            for (Map.Entry<String, String> entry : CONSTRAINS_I18N_MAP.entrySet()) {
+                if (lowerCaseMsg.contains(entry.getKey())) {
+                    return logAndGetErrorInfo(req, e, VALIDATION_ERROR, messageSourceAccessor.getMessage(entry.getValue()));
+                }
+            }
+        }
+        return logAndGetErrorInfo(req, e, DATA_ERROR, null);
+    }
+
+    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e,
+                                                ErrorType errorType, String localizedMessage) {
+        log(req, e, true, errorType);
+        return getErrorInfo(req.getRequestURL(), errorType, List.of(localizedMessage));
     }
 
     private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, IllegalFieldsException e, boolean logException, ErrorType errorType) {
