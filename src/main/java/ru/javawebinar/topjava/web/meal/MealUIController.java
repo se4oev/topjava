@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.ValidationUtil;
-import ru.javawebinar.topjava.util.exception.IllegalFieldsException;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -41,9 +40,7 @@ public class MealUIController extends AbstractMealController {
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void createOrUpdate(@Valid Meal meal, BindingResult result) {
-        if (result.hasErrors()) {
-            throw new IllegalFieldsException(ValidationUtil.getFieldErrors(result));
-        }
+        ValidationUtil.handleErrors(result);
         if (meal.isNew()) {
             super.create(meal);
         } else {

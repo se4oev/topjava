@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.ValidationUtil;
-import ru.javawebinar.topjava.util.exception.IllegalFieldsException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -38,9 +37,7 @@ public class AdminUIController extends AbstractUserController {
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void createOrUpdate(@Valid UserTo userTo, BindingResult result) {
-        if (result.hasErrors()) {
-            throw new IllegalFieldsException(ValidationUtil.getFieldErrors(result));
-        }
+        ValidationUtil.handleErrors(result);
         if (userTo.isNew()) {
             super.create(userTo);
         } else {
