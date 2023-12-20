@@ -10,14 +10,14 @@ import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.UsersUtil;
+import ru.javawebinar.topjava.util.exception.ErrorInfo;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.javawebinar.topjava.TestUtil.assertErrorInfo;
-import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
+import static ru.javawebinar.topjava.TestUtil.*;
 import static ru.javawebinar.topjava.UserTestData.*;
 import static ru.javawebinar.topjava.web.user.ProfileRestController.REST_URL;
 
@@ -76,7 +76,7 @@ class ProfileRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andReturn();
 
-        assertErrorInfo(result, 2);
+        assertValidationErrorsCount(readMvcResult(result, ErrorInfo.class), 2);
     }
 
     @Test
@@ -101,7 +101,7 @@ class ProfileRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andReturn();
 
-        assertErrorInfo(result, 3);
+        assertValidationErrorsCount(readMvcResult(result, ErrorInfo.class), 2);
     }
 
     @Test

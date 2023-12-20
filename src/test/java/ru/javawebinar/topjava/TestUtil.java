@@ -28,8 +28,11 @@ public class TestUtil {
         return SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
     }
 
-    public static void assertErrorInfo(MvcResult mvcResult, int expectedErrorCount) throws UnsupportedEncodingException {
-        ErrorInfo errorInfo = JsonUtil.readValue(mvcResult.getResponse().getContentAsString(), ErrorInfo.class);
+    public static <T> T readMvcResult(MvcResult result, Class<T> clazz) throws UnsupportedEncodingException {
+        return JsonUtil.readValue(result.getResponse().getContentAsString(), clazz);
+    }
+
+    public static void assertValidationErrorsCount(ErrorInfo errorInfo, int expectedErrorCount) {
         Assertions.assertEquals(ErrorType.VALIDATION_ERROR, errorInfo.getType());
         Assertions.assertEquals(expectedErrorCount, errorInfo.getDetails().size());
     }
