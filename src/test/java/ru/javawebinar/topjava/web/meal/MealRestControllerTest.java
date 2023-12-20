@@ -1,7 +1,6 @@
 package ru.javawebinar.topjava.web.meal;
 
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -10,8 +9,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
-import ru.javawebinar.topjava.util.exception.ErrorInfo;
-import ru.javawebinar.topjava.util.exception.ErrorType;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
@@ -21,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.javawebinar.topjava.MealTestData.*;
+import static ru.javawebinar.topjava.TestUtil.assertErrorInfo;
 import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 import static ru.javawebinar.topjava.UserTestData.user;
@@ -95,9 +93,8 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .content(JsonUtil.writeValue(updated)))
                 .andExpect(status().isUnprocessableEntity())
                 .andReturn();
-        ErrorInfo errorInfo = JsonUtil.readValue(mvcResult.getResponse().getContentAsString(), ErrorInfo.class);
-        Assertions.assertEquals(ErrorType.VALIDATION_ERROR, errorInfo.getType());
-        Assertions.assertEquals(2, errorInfo.getDetails().size());
+
+        assertErrorInfo(mvcResult, 2);
     }
 
     @Test
@@ -126,9 +123,7 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .content(JsonUtil.writeValue(newMeal)))
                 .andExpect(status().isUnprocessableEntity()).andReturn();
 
-        ErrorInfo errorInfo = JsonUtil.readValue(result.getResponse().getContentAsString(), ErrorInfo.class);
-        Assertions.assertEquals(ErrorType.VALIDATION_ERROR, errorInfo.getType());
-        Assertions.assertEquals(1, errorInfo.getDetails().size());
+        assertErrorInfo(result, 1);
     }
 
     @Test

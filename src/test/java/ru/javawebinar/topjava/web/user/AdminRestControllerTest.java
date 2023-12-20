@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.web.user;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -9,17 +8,15 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
-import ru.javawebinar.topjava.util.exception.ErrorInfo;
-import ru.javawebinar.topjava.util.exception.ErrorType;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
-import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.javawebinar.topjava.TestUtil.assertErrorInfo;
 import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.*;
 
@@ -111,9 +108,7 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .content(jsonWithPassword(updated, updated.getPassword())))
                 .andExpect(status().isUnprocessableEntity())
                 .andReturn();
-        ErrorInfo errorInfo = JsonUtil.readValue(mvcResult.getResponse().getContentAsString(), ErrorInfo.class);
-        Assertions.assertEquals(ErrorType.VALIDATION_ERROR, errorInfo.getType());
-        Assertions.assertEquals(2, errorInfo.getDetails().size());
+        assertErrorInfo(mvcResult, 2);
     }
 
     @Test
@@ -142,9 +137,7 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .content(jsonWithPassword(updated, updated.getPassword())))
                 .andExpect(status().isUnprocessableEntity())
                 .andReturn();
-        ErrorInfo errorInfo = JsonUtil.readValue(mvcResult.getResponse().getContentAsString(), ErrorInfo.class);
-        Assertions.assertEquals(ErrorType.VALIDATION_ERROR, errorInfo.getType());
-        Assertions.assertEquals(1, errorInfo.getDetails().size());
+        assertErrorInfo(mvcResult, 1);
     }
 
     @Test

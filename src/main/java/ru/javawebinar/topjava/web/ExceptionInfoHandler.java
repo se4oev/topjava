@@ -9,6 +9,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,6 +22,7 @@ import ru.javawebinar.topjava.util.exception.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
@@ -41,36 +43,43 @@ public class ExceptionInfoHandler {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(NotFoundException.class)
     public ErrorInfo notFoundError(HttpServletRequest req, NotFoundException e) {
-        return logAndGetErrorInfo(req, e, false, DATA_NOT_FOUND);
+        return logAndGetErrorInfo(
+                req, e, false, DATA_NOT_FOUND, () -> List.of(ValidationUtil.getRootCause(e).toString()));
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
     @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public ErrorInfo validationError(HttpServletRequest req, Exception e) {
-        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
+        return logAndGetErrorInfo(
+                req, e, false, VALIDATION_ERROR, () -> List.of(ValidationUtil.getRootCause(e).toString()));
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(IllegalFieldsException.class)
     public ErrorInfo validationError(HttpServletRequest req, IllegalFieldsException e) {
-        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
+        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, e::getFieldsErrors);
+    }
+
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler(BindException.class)
+    public ErrorInfo bindingError(HttpServletRequest req, BindException e) {
+        return logAndGetErrorInfo(
+                req, e, true, VALIDATION_ERROR, () -> ValidationUtil.getFieldErrors(e.getBindingResult()));
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ErrorInfo internalError(HttpServletRequest req, Exception e) {
-        return logAndGetErrorInfo(req, e, true, APP_ERROR);
+        return logAndGetErrorInfo(
+                req, e, true, APP_ERROR, () -> List.of(ValidationUtil.getRootCause(e).toString()));
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ErrorInfo handleMethodArgumentNotValidException(MethodArgumentNotValidException error) {
-        return new ErrorInfo(
-                "",
-                VALIDATION_ERROR,
-                VALIDATION_ERROR.message(),
-                ValidationUtil.getFieldErrors(error.getBindingResult())
-        );
+    public ErrorInfo handleMethodArgumentNotValidException(HttpServletRequest req,
+                                                           MethodArgumentNotValidException error) {
+        return logAndGetErrorInfo(req, error, true, VALIDATION_ERROR,
+                () -> ValidationUtil.getFieldErrors(error.getBindingResult()));
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
@@ -81,40 +90,23 @@ public class ExceptionInfoHandler {
             String lowerCaseMsg = rootMsg.toLowerCase();
             for (Map.Entry<String, String> entry : CONSTRAINS_I18N_MAP.entrySet()) {
                 if (lowerCaseMsg.contains(entry.getKey())) {
-                    return logAndGetErrorInfo(req, e, VALIDATION_ERROR, messageSourceAccessor.getMessage(entry.getValue()));
+                    return logAndGetErrorInfo(req, e, true, VALIDATION_ERROR,
+                            () -> List.of(messageSourceAccessor.getMessage(entry.getValue())));
                 }
             }
         }
-        return logAndGetErrorInfo(req, e, DATA_ERROR, null);
+        return logAndGetErrorInfo(req, e, true, DATA_ERROR, List::of);
     }
 
-    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e,
-                                                ErrorType errorType, String localizedMessage) {
-        log(req, e, true, errorType);
-        return getErrorInfo(req.getRequestURL(), errorType, List.of(localizedMessage));
-    }
-
-    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, IllegalFieldsException e, boolean logException, ErrorType errorType) {
-        log(req, e, logException, errorType);
-        return getErrorInfo(req.getRequestURL(), errorType, e.getFieldsErrors());
-    }
-
-    private static void log(HttpServletRequest req, Throwable rootCause, boolean logException, ErrorType errorType) {
+    //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
+    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException,
+                                                ErrorType errorType, Supplier<List<String>> errorsSupplier) {
+        Throwable rootCause = ValidationUtil.getRootCause(e);
         if (logException) {
             log.error(errorType + " at request " + req.getRequestURL(), rootCause);
         } else {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
-    }
-
-    //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
-    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
-        Throwable rootCause = ValidationUtil.getRootCause(e);
-        log(req, rootCause, logException, errorType);
-        return getErrorInfo(req.getRequestURL(), errorType, List.of(rootCause.toString()));
-    }
-
-    private static ErrorInfo getErrorInfo(CharSequence requestURL, ErrorType errorType, List<String> messages) {
-        return new ErrorInfo(requestURL, errorType, errorType.message(), messages);
+        return new ErrorInfo(req.getRequestURL(), errorType, errorType.message(), errorsSupplier.get());
     }
 }

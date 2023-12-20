@@ -1,10 +1,17 @@
 package ru.javawebinar.topjava;
 
+import org.junit.jupiter.api.Assertions;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import ru.javawebinar.topjava.model.User;
+import ru.javawebinar.topjava.util.exception.ErrorInfo;
+import ru.javawebinar.topjava.util.exception.ErrorType;
+import ru.javawebinar.topjava.web.json.JsonUtil;
+
+import java.io.UnsupportedEncodingException;
 
 public class TestUtil {
 
@@ -19,5 +26,11 @@ public class TestUtil {
 
     public static RequestPostProcessor userAuth(User user) {
         return SecurityMockMvcRequestPostProcessors.authentication(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+    }
+
+    public static void assertErrorInfo(MvcResult mvcResult, int expectedErrorCount) throws UnsupportedEncodingException {
+        ErrorInfo errorInfo = JsonUtil.readValue(mvcResult.getResponse().getContentAsString(), ErrorInfo.class);
+        Assertions.assertEquals(ErrorType.VALIDATION_ERROR, errorInfo.getType());
+        Assertions.assertEquals(expectedErrorCount, errorInfo.getDetails().size());
     }
 }
